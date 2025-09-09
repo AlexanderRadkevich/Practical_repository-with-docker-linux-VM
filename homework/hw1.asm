@@ -13,5 +13,5 @@ _start:
     int     0x80        ; kernel call
 
 section .data
-    msg     db  "Hello from Assembly!", 0x0d, 0x0a
+    msg     db  "Hello World", 0x0d, 0x0a
     len     equ $ - msg
