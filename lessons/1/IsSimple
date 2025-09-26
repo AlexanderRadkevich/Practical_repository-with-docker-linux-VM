@@ -1,0 +1,53 @@
+.model small
+.stack 100h
+.data
+    prime_msg db 'Number is prime$'
+    not_prime_msg db 'Number is not prime$'
+    newline db 0Dh, 0Ah, '$'  ; Переведення рядка
+
+.code
+main proc
+    mov ax, @data
+    mov ds, ax
+    cmp ax, 2
+    jl not_prime         
+    je is_prime          
+
+    ; Перевірка на парність (крім 2)
+    test ax, 1
+    jz not_prime         
+    mov bx, 3           
+    mov cx, ax           
+    shr cx, 1            
+
+check_div:
+    cmp bx, cx           
+    jg is_prime
+    xor dx, dx           
+    div bx               
+    cmp dx, 0            
+    je not_prime
+    mov ax, cx           
+    add bx, 2            
+    jmp check_div
+
+is_prime:
+    mov ah, 09h
+    lea dx, prime_msg
+    int 21h
+    jmp print_newline
+
+not_prime:
+    mov ah, 09h
+    lea dx, not_prime_msg
+    int 21h
+
+print_newline:
+    mov ah, 09h
+    lea dx, newline
+    int 21h
+    mov ah, 4Ch
+    int 21h
+
+main endp
+end main
