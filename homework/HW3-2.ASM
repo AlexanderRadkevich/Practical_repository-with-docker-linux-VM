@@ -36,7 +36,7 @@ int2str:
     test eax, eax
     jnz .loop
 
-    ; Реверс
+  
     mov eax, edi
     dec esi
     mov ebx, ecx
