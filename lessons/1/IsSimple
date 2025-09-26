@@ -3,8 +3,7 @@
 .data
     prime_msg db 'Number is prime$'
     not_prime_msg db 'Number is not prime$'
-    newline db 0Dh, 0Ah, '$'  ; Переведення рядка
-
+    newline db 0Dh, 0Ah, '$'  
 .code
 main proc
     mov ax, @data
@@ -13,7 +12,6 @@ main proc
     jl not_prime         
     je is_prime          
 
-    ; Перевірка на парність (крім 2)
     test ax, 1
     jz not_prime         
     mov bx, 3           
