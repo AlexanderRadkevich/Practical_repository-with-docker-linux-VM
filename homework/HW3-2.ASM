@@ -1,79 +1,59 @@
-ssection .text
+section .text
+global _start
 
- global _start
+_start:
+    mov eax, 1234512345     
+    mov esi, buffer
+    call int2str
 
- ; 1. entry point
- _start:
-     ; 2. prepare parameters to function call
-     mov     eax, 123456789
-     mov     esi, buffer
-     ; 3. call function `int2str`
-     call    int2str
 
-     ; 4. prepare parameters to function call
-     mov     eax, 4      ; function number: 4-print
-     mov     ebx, 1      ; device number:   1-stdout
-     mov     ecx, buffer ; buffer to print (updated to use buffer start)
-     mov     edx, 11     ; max length of buffer (updated to handle full number)
-     ; 5. OS call, print to console
-     int     0x80
+    mov eax, 4
+    mov ebx, 1
+    mov ecx, buffer
+    mov edx, edi
+    int 0x80
 
-     ; 6. prepare parameters to function call
-     mov     eax, 1
-     ; 7. OS call, exit
-     int     0x80
 
- ; EAX - input number
- ; ESI - buffer for output string
- int2str:
-     push    ebx         ; save registers
-     push    edi
+    mov eax, 1
+    xor ebx, ebx
+    int 0x80
 
-     mov     edi, esi    ; save buffer start for later
-     add     esi, 10     ; start from end of buffer (for reverse storage)
-     mov     byte [esi], 0 ; null-terminate the string
 
-     ; handle zero case
-     cmp     eax, 0
-     jne     .loop
-     dec     esi
-     mov     byte [esi], '0'
-     jmp     .done
 
- .loop:
-     cmp     eax, 0      ; check if number is 0
-     je      .done       ; if zero, finish
 
-     ; remainder = eax % 10
-     xor     edx, edx
-     mov     ebx, 10
-     div     ebx         ; eax = quotient, edx = remainder
+int2str:
+    mov edi, 0
+    mov ebx, 10
+    mov ecx, esi
 
-     ; convert remainder to ASCII
-     add     dl, 48      ; convert to ASCII ('0' = 48)
-     dec     esi         ; move buffer pointer back
-     mov     [esi], dl   ; store digit
+.loop:
+    xor edx, edx
+    div ebx
+    add dl, '0'
+    mov [esi], dl
+    inc esi
+    inc edi
+    test eax, eax
+    jnz .loop
 
-     jmp     .loop       ; continue with next digit
+    ; Реверс
+    mov eax, edi
+    dec esi
+    mov ebx, ecx
 
- .done:
-     ; move string to start of buffer if needed
-     cmp     esi, edi
-     je      .exit       ; already at start, no need to move
-     mov     ecx, esi    ; source for copy
-     mov     esi, edi    ; destination (buffer start)
- .copy_loop:
-     mov     dl, [ecx]   ; get char
-     mov     [esi], dl   ; copy to start
-     inc     esi
-     inc     ecx
-     cmp     byte [ecx], 0 ; check for null terminator
-     jne     .copy_loop
+.reverse:
+    cmp ebx, esi
+    jge .done
+    mov al, [ebx]
+    mov dl, [esi]
+    mov [ebx], dl
+    mov [esi], al
+    inc ebx
+    dec esi
+    jmp .reverse
 
- .exit:
-     pop     edi         ; restore registers
-     pop     ebx
-     ret
+.done:
+    ret
 
- section .bss
-     buffer  resb 11     ; buffer for 10 digits + null terminator
+section .bss
+buffer resb 11
